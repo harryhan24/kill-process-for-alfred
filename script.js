@@ -15,7 +15,7 @@ function emit(items) {
 function buildIcon(processPath) {
   const appMatch = processPath.match(/.*?\.app\//);
   if (appMatch) return { type: 'fileicon', path: appMatch[0] };
-  return { path: '/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/ExecutableBinaryIcon.icns' };
+  return { path: '/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/GenericApplicationIcon.icns' };
 }
 
 function getProcessInfo(pid) {

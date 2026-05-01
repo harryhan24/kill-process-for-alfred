@@ -6,11 +6,11 @@
 	<string>com.harrymikoshi.alfred.process-killer</string>
 	<key>connections</key>
 	<dict>
-		<key>F388F149-8417-4875-B0AA-43CD65ACD928</key>
+		<key>EBC072DB-AEEF-47A1-8E48-51E7BB308FE1</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>EBC072DB-AEEF-47A1-8E48-51E7BB308FE1</string>
+				<string>230C0AB3-764E-44F8-90B7-6F20EE2D677C</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -19,11 +19,11 @@
 				<false/>
 			</dict>
 		</array>
-		<key>EBC072DB-AEEF-47A1-8E48-51E7BB308FE1</key>
+		<key>F388F149-8417-4875-B0AA-43CD65ACD928</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>230C0AB3-764E-44F8-90B7-6F20EE2D677C</string>
+				<string>EBC072DB-AEEF-47A1-8E48-51E7BB308FE1</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -102,8 +102,8 @@ node script.js "$1"</string>
 				<integer>102</integer>
 				<key>script</key>
 				<string>PID="$1"
-NAME=$(ps -p "$PID" -o comm= 2>/dev/null | awk -F/ '{print $NF}')
-if kill "$PID" 2>/dev/null; then
+NAME=$(ps -p "$PID" -o comm= 2&gt;/dev/null | awk -F/ '{print $NF}')
+if kill "$PID" 2&gt;/dev/null; then
   echo "Killed ${NAME:-PID $PID}"
 else
   echo "Failed to kill PID $PID"
@@ -111,8 +111,6 @@ fi</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string></string>
-				<key>subtype</key>
 				<string></string>
 				<key>type</key>
 				<integer>0</integer>
@@ -158,10 +156,10 @@ Requires Node.js (Homebrew or system install).
 Inspired by: https://github.com/ngreenstein/alfred-process-killer</string>
 	<key>uidata</key>
 	<dict>
-		<key>F388F149-8417-4875-B0AA-43CD65ACD928</key>
+		<key>230C0AB3-764E-44F8-90B7-6F20EE2D677C</key>
 		<dict>
 			<key>xpos</key>
-			<integer>40</integer>
+			<integer>540</integer>
 			<key>ypos</key>
 			<integer>40</integer>
 		</dict>
@@ -172,16 +170,18 @@ Inspired by: https://github.com/ngreenstein/alfred-process-killer</string>
 			<key>ypos</key>
 			<integer>40</integer>
 		</dict>
-		<key>230C0AB3-764E-44F8-90B7-6F20EE2D677C</key>
+		<key>F388F149-8417-4875-B0AA-43CD65ACD928</key>
 		<dict>
 			<key>xpos</key>
-			<integer>540</integer>
+			<integer>40</integer>
 			<key>ypos</key>
 			<integer>40</integer>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
 	<array/>
+	<key>version</key>
+	<string>1.0.1</string>
 	<key>webaddress</key>
 	<string>https://github.com/harryhan24/kill-process-for-alfred</string>
 </dict>
