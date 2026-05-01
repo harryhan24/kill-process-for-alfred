@@ -34,7 +34,7 @@
 		</array>
 	</dict>
 	<key>createdby</key>
-	<string>harry</string>
+	<string>harryhan24</string>
 	<key>description</key>
 	<string>Search running processes by name, args, or port and terminate them with the kill command.</string>
 	<key>disabled</key>
