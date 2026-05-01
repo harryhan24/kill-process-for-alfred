@@ -36,7 +36,7 @@
 	<key>createdby</key>
 	<string>harry</string>
 	<key>description</key>
-	<string>실행 중인 프로세스를 검색해서 kill 명령으로 종료합니다.</string>
+	<string>Search running processes by name, args, or port and terminate them with the kill command.</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
@@ -69,7 +69,7 @@
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>프로세스 검색 중...</string>
+				<string>Searching processes...</string>
 				<key>script</key>
 				<string>export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 node script.js "$1"</string>
@@ -78,9 +78,9 @@ node script.js "$1"</string>
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>프로세스 이름 또는 포트 입력 (예: chrome / node:server / -p 3000)</string>
+				<string>Enter a process name or port (e.g., chrome / node:server / -p 3000)</string>
 				<key>title</key>
-				<string>프로세스 종료</string>
+				<string>Kill process</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -104,9 +104,9 @@ node script.js "$1"</string>
 				<string>PID="$1"
 NAME=$(ps -p "$PID" -o comm= 2>/dev/null | awk -F/ '{print $NF}')
 if kill "$PID" 2>/dev/null; then
-  echo "${NAME:-PID $PID} 종료됨"
+  echo "Killed ${NAME:-PID $PID}"
 else
-  echo "종료 실패: PID $PID"
+  echo "Failed to kill PID $PID"
 fi</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
@@ -147,14 +147,15 @@ fi</string>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>Alfred에서 'kill {프로세스명}'을 입력하면 실행 중인 프로세스를 검색하고, 선택한 항목을 kill 명령으로 종료합니다.
+	<string>Type 'kill {query}' in Alfred to search running processes and terminate the selected one with the kill command.
 
-사용법:
-  kill chrome           - chrome이 포함된 프로세스 검색
-  kill node:server      - node 프로세스 중 인자에 'server'가 포함된 것만
-  kill -p 3000          - 3000번 포트를 LISTEN 중인 프로세스 종료
+Usage:
+  kill chrome           - search processes whose name contains "chrome"
+  kill node:server      - filter node processes whose args contain "server"
+  kill -p 3000          - kill the process listening on TCP port 3000
 
-참고: https://github.com/ngreenstein/alfred-process-killer</string>
+Requires Node.js (Homebrew or system install).
+Inspired by: https://github.com/ngreenstein/alfred-process-killer</string>
 	<key>uidata</key>
 	<dict>
 		<key>F388F149-8417-4875-B0AA-43CD65ACD928</key>
@@ -182,6 +183,6 @@ fi</string>
 	<key>userconfigurationconfig</key>
 	<array/>
 	<key>webaddress</key>
-	<string>https://github.com/ngreenstein/alfred-process-killer</string>
+	<string>https://github.com/harryhan24/kill-process-for-alfred</string>
 </dict>
 </plist>
