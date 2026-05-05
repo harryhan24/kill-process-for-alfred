@@ -181,7 +181,7 @@ Inspired by: https://github.com/ngreenstein/alfred-process-killer</string>
 	<key>userconfigurationconfig</key>
 	<array/>
 	<key>version</key>
-	<string>1.0.1</string>
+	<string>1.0.2</string>
 	<key>webaddress</key>
 	<string>https://github.com/harryhan24/kill-process-for-alfred</string>
 </dict>

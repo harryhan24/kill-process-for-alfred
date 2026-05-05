@@ -4,12 +4,38 @@ const { execSync } = require('child_process');
 
 let theQuery = (process.argv[2] || '').trim();
 
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 function emit(items) {
   process.stdout.write(JSON.stringify({ items }));
+}
+
+function fuzzyScore(query, text) {
+  if (!query) return 0;
+  const q = query.toLowerCase();
+  const t = text.toLowerCase();
+
+  let score = 0;
+  let qi = 0;
+  let prevMatched = -2;
+  let consecutive = 0;
+
+  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+    if (t[ti] === q[qi]) {
+      if (prevMatched === ti - 1) {
+        consecutive++;
+        score += 5 + consecutive * 2;
+      } else {
+        consecutive = 0;
+        score += 1;
+      }
+      if (ti === 0 || /[\s\-_./]/.test(t[ti - 1])) score += 10;
+      prevMatched = ti;
+      qi++;
+    }
+  }
+
+  if (qi < q.length) return -1;
+  score -= (t.length - q.length) * 0.1;
+  return score;
 }
 
 function buildIcon(processPath) {
@@ -97,7 +123,6 @@ try {
   process.exit(0);
 }
 
-const queryRegex = new RegExp(`[^/]*${escapeRegex(theQuery)}[^/]*$`, 'i');
 const items = [];
 
 for (const line of psOutput.split('\n')) {
@@ -108,32 +133,40 @@ for (const line of psOutput.split('\n')) {
   if (!match) continue;
 
   const [, pid, cpu, processPath] = match;
+  const processName = processPath.split('/').pop() || processPath;
 
-  const nameMatch = processPath.match(queryRegex);
-  if (!nameMatch) continue;
+  const nameScore = fuzzyScore(theQuery, processName);
+  if (nameScore < 0) continue;
 
   let matchedArgs = [];
+  let argsScore = 0;
   if (argsQuery) {
     try {
       const cmdOutput = execSync(`ps -p ${pid} -o command=`, { encoding: 'utf8' });
-      const argRegex = new RegExp(`\\s+-{1,2}[^\\s]*${escapeRegex(argsQuery)}[^\\s]*`, 'gi');
-      matchedArgs = cmdOutput.match(argRegex) || [];
-      if (matchedArgs.length < 1) continue;
+      const tokens = cmdOutput.split(/\s+/).filter(t => /^-{1,2}/.test(t));
+      const scored = tokens
+        .map(t => ({ token: t, score: fuzzyScore(argsQuery, t) }))
+        .filter(t => t.score >= 0);
+      if (scored.length < 1) continue;
+      matchedArgs = scored.map(t => t.token);
+      argsScore = Math.max(...scored.map(t => t.score));
     } catch (e) {
       continue;
     }
   }
 
-  const processName = nameMatch[0];
-
   items.push({
+    _score: nameScore + argsScore,
     uid: `${processName}-${pid}`,
-    title: processName + (matchedArgs.length ? matchedArgs.join(' ') : ''),
+    title: processName + (matchedArgs.length ? ' ' + matchedArgs.join(' ') : ''),
     subtitle: `${cpu}% CPU @ ${processPath}`,
     arg: pid,
     icon: buildIcon(processPath),
   });
 }
+
+items.sort((a, b) => b._score - a._score);
+items.forEach(item => delete item._score);
 
 if (items.length === 0) {
   items.push({ title: `No processes found for '${theQuery}'`, valid: false });
