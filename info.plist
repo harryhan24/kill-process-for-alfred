@@ -71,7 +71,7 @@
 				<key>runningsubtext</key>
 				<string>Searching processes...</string>
 				<key>script</key>
-				<string>export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+				<string>export PATH="$HOME/.local/share/mise/shims:/opt/homebrew/bin:/usr/local/bin:$PATH"
 node script.js "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
