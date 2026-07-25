@@ -17,8 +17,30 @@ Inspired by [ngreenstein/alfred-process-killer](https://github.com/ngreenstein/a
 
 ## Installation
 
-1. Download the latest `Kill-Process-for-Alfred.alfredworkflow` from the [Releases](https://github.com/harryhan24/kill-process-for-alfred/releases) page.
-2. Double-click the file to import it into Alfred.
+### 설치 / 재설치 (원라이너)
+
+```bash
+curl -sL https://raw.githubusercontent.com/harryhan24/kill-process-for-alfred/main/scripts/install.sh | bash
+```
+
+- 최신 릴리스의 `.alfredworkflow`를 받아 Alfred workflows 폴더에 바로 풀어넣는다 — import 대화상자가 뜨지 않는다.
+- 재실행하면 기존 설치를 덮어쓴다.
+- 개발용 심링크(`install.sh`로 만든 것)가 이미 있으면 덮어쓰지 않고 거부한다.
+
+### 직접 import
+
+1. [Releases](https://github.com/harryhan24/kill-process-for-alfred/releases)에서 `Kill-Process-for-Alfred.alfredworkflow`를 받는다.
+2. 파일을 더블클릭해 Alfred에 import한다.
+
+### 개발 체크아웃 연결
+
+repo를 이미 클론해 뒀다면 릴리스 대신 체크아웃을 그대로 링크한다:
+
+```bash
+./install.sh
+```
+
+파일을 수정하면 Alfred가 읽는 워크플로가 바로 바뀐다.
 
 ## Requirements
 
@@ -48,6 +70,11 @@ The workflow consists of two files:
 
 - `info.plist` — Alfred workflow definition (Script Filter → Run Script → Notification)
 - `script.js` — Node.js Script Filter that produces Alfred JSON output
+
+Plus the installers:
+
+- `scripts/install.sh` — downloads the latest release and unpacks it into Alfred's workflows directory (for machines that just want to use the workflow)
+- `install.sh` — symlinks the checkout it lives in into Alfred's workflows directory (for development)
 
 To package a release:
 
