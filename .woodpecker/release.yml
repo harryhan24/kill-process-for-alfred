@@ -1,0 +1,49 @@
+# prod 브랜치에 push하면 .alfredworkflow를 빌드해 Forgejo 릴리스로 발행한다.
+# 태그는 info.plist의 version에서 따고, 릴리스 API가 태그까지 함께 만든다
+# (CI에서 git push가 필요 없다). 개발은 main, 릴리스는 main -> prod 승격.
+when:
+  - event: push
+    branch: prod
+    path:
+      include:
+        - 'info.plist'
+        - 'script.js'
+        - 'icon.png'
+        - '.woodpecker/**'
+      exclude:
+        - '**/*.md'
+      on_empty: false
+  - event: manual
+
+steps:
+  release:
+    image: alpine:3.20
+    environment:
+      FORGEJO_TOKEN:
+        from_secret: FORGEJO_REGISTRY_TOKEN
+    commands:
+      - apk add --no-cache curl jq zip python3
+      - VERSION=$(python3 -c "import plistlib;print(plistlib.load(open('info.plist','rb'))['version'])")
+      - TAG="v$VERSION"
+      - API="https://git.ehdtn.com/api/v1/repos/$CI_REPO"
+      - ASSET="Kill-Process-for-Alfred.alfredworkflow"
+      - echo "releasing $TAG from $CI_COMMIT_SHA"
+
+      # 같은 태그의 릴리스가 이미 있으면 멈춘다 — info.plist의 version을 올릴 것
+      - |
+        if curl -sf -o /dev/null -H "Authorization: token $FORGEJO_TOKEN" "$API/releases/tags/$TAG"; then
+          echo "error: $TAG 릴리스가 이미 있습니다 — info.plist의 version을 올리세요" >&2
+          exit 1
+        fi
+
+      # Alfred가 읽는 파일만 담는다 — 개발용 스크립트·문서는 제외
+      - zip -qr "/tmp/$ASSET" . -x '.git/*' '.woodpecker/*' 'scripts/*' 'install.sh' 'AGENTS.md' 'CLAUDE.md' '.gitignore' '.DS_Store'
+
+      - |
+        ID=$(curl -sf -X POST -H "Authorization: token $FORGEJO_TOKEN" -H "Content-Type: application/json" \
+          -d "{\"tag_name\":\"$TAG\",\"target_commitish\":\"$CI_COMMIT_SHA\",\"name\":\"$TAG\"}" \
+          "$API/releases" | jq -r .id)
+        test -n "$ID" -a "$ID" != null || { echo "error: 릴리스 생성 실패" >&2; exit 1; }
+        curl -sf -X POST -H "Authorization: token $FORGEJO_TOKEN" \
+          -F "attachment=@/tmp/$ASSET" "$API/releases/$ID/assets?name=$ASSET" >/dev/null
+        echo "released: $TAG ($ASSET)"

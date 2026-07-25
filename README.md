@@ -75,14 +75,18 @@ Plus the scripts:
 
 - `scripts/install.sh` — downloads the latest release and unpacks it into Alfred's workflows directory (for machines that just want to use the workflow)
 - `install.sh` — symlinks the checkout it lives in into Alfred's workflows directory (for development)
-- `scripts/release.sh` — packages the `.alfredworkflow` and publishes it as a Forgejo release
+- `.woodpecker/release.yml` — `prod` 브랜치 push 시 Woodpecker가 `.alfredworkflow`를 빌드해 Forgejo 릴리스로 발행한다
 
 릴리스 절차:
 
-1. `info.plist`의 `version`을 올려 커밋한다.
-2. `./scripts/release.sh` — version에서 태그를 따서 push하고, zip을 만들어 릴리스에 첨부한다.
+1. `info.plist`의 `version`을 올려 `main`에 커밋한다.
+2. `main`을 `prod`로 승격해 push한다:
 
-Forgejo Actions 러너가 없어 릴리스는 로컬에서 만든다. `GIT_USERNAME` / `GIT_PASSWORD`와 `tea` CLI가 필요하다.
+```bash
+git push origin main:prod
+```
+
+Woodpecker가 version에서 태그(`v<ver>`)를 따고, 릴리스와 `.alfredworkflow` asset을 만든다. 같은 태그의 릴리스가 이미 있으면 빌드가 실패하므로 version을 먼저 올려야 한다.
 
 ## License
 
