@@ -20,7 +20,7 @@ Inspired by [ngreenstein/alfred-process-killer](https://github.com/ngreenstein/a
 ### 설치 / 재설치 (원라이너)
 
 ```bash
-curl -sL https://raw.githubusercontent.com/harryhan24/kill-process-for-alfred/main/scripts/install.sh | bash
+curl -sL https://git.ehdtn.com/harryhan24/kill-process-for-alfred/raw/branch/main/scripts/install.sh | bash
 ```
 
 - 최신 릴리스의 `.alfredworkflow`를 받아 Alfred workflows 폴더에 바로 풀어넣는다 — import 대화상자가 뜨지 않는다.
@@ -29,7 +29,7 @@ curl -sL https://raw.githubusercontent.com/harryhan24/kill-process-for-alfred/ma
 
 ### 직접 import
 
-1. [Releases](https://github.com/harryhan24/kill-process-for-alfred/releases)에서 `Kill-Process-for-Alfred.alfredworkflow`를 받는다.
+1. [Releases](https://git.ehdtn.com/harryhan24/kill-process-for-alfred/releases)에서 `Kill-Process-for-Alfred.alfredworkflow`를 받는다.
 2. 파일을 더블클릭해 Alfred에 import한다.
 
 ### 개발 체크아웃 연결
@@ -71,16 +71,18 @@ The workflow consists of two files:
 - `info.plist` — Alfred workflow definition (Script Filter → Run Script → Notification)
 - `script.js` — Node.js Script Filter that produces Alfred JSON output
 
-Plus the installers:
+Plus the scripts:
 
 - `scripts/install.sh` — downloads the latest release and unpacks it into Alfred's workflows directory (for machines that just want to use the workflow)
 - `install.sh` — symlinks the checkout it lives in into Alfred's workflows directory (for development)
+- `scripts/release.sh` — packages the `.alfredworkflow` and publishes it as a Forgejo release
 
-To package a release:
+릴리스 절차:
 
-```sh
-zip -r Kill-Process-for-Alfred.alfredworkflow info.plist script.js
-```
+1. `info.plist`의 `version`을 올려 커밋한다.
+2. `./scripts/release.sh` — version에서 태그를 따서 push하고, zip을 만들어 릴리스에 첨부한다.
+
+Forgejo Actions 러너가 없어 릴리스는 로컬에서 만든다. `GIT_USERNAME` / `GIT_PASSWORD`와 `tea` CLI가 필요하다.
 
 ## License
 

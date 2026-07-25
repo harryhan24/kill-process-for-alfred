@@ -2,12 +2,11 @@
 # 최신 릴리스의 .alfredworkflow를 받아 Alfred workflows 폴더에 바로 설치한다.
 # zip을 UUID 폴더로 직접 풀기 때문에 Alfred import 대화상자가 뜨지 않는다.
 #
-#   curl -sL https://raw.githubusercontent.com/harryhan24/kill-process-for-alfred/main/scripts/install.sh | bash
+#   curl -sL https://git.ehdtn.com/harryhan24/kill-process-for-alfred/raw/branch/main/scripts/install.sh | bash
 set -euo pipefail
 
 REPO="harryhan24/kill-process-for-alfred"
-ASSET="Kill-Process-for-Alfred.alfredworkflow"
-URL="https://github.com/$REPO/releases/latest/download/$ASSET"
+API="https://git.ehdtn.com/api/v1/repos/$REPO/releases/latest"
 
 ALFRED_WORKFLOWS="$HOME/Library/Application Support/Alfred/Alfred.alfredpreferences/workflows"
 # Alfred는 폴더명으로 워크플로를 식별한다 — 이 UUID는 바꾸면 안 된다
@@ -30,11 +29,18 @@ if [ -L "$TARGET" ]; then
   exit 1
 fi
 
+# Forgejo에는 GitHub식 releases/latest/download 단축 URL이 없어 API로 asset을 찾는다
+ASSET_URL=$(curl -sfL "$API" | python3 -c "
+import json, sys
+assets = json.load(sys.stdin)['assets']
+print(next(a['browser_download_url'] for a in assets if a['name'].endswith('.alfredworkflow')))
+")
+
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
-echo "downloading: $URL"
-curl -sfL "$URL" -o "$TMP/workflow.zip"
+echo "downloading: $ASSET_URL"
+curl -sfL "$ASSET_URL" -o "$TMP/workflow.zip"
 unzip -q "$TMP/workflow.zip" -d "$TMP/workflow"
 
 if [ -d "$TARGET" ]; then
