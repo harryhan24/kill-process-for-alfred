@@ -38,6 +38,41 @@ function fuzzyScore(query, text) {
   return score;
 }
 
+// 검색 대상 문자열 목록: 실행 파일명 + 경로에 포함된 모든 .app 번들명
+// (예: /Applications/Harry Agents Switch.app/Contents/MacOS/agents-manager
+//      → ['agents-manager', 'Harry Agents Switch'])
+function searchTargets(processPath) {
+  const targets = [processPath.split('/').pop() || processPath];
+  for (const m of processPath.matchAll(/([^/]+)\.app(?=\/)/g)) {
+    if (!targets.includes(m[1])) targets.push(m[1]);
+  }
+  return targets;
+}
+
+// 검색 대상 중 최고 점수를 고른다. tier 1 = 연속 부분문자열 매치, tier 0 = fuzzy 매치.
+// 정렬 시 tier가 score보다 우선하므로 부분문자열 매치가 항상 fuzzy 매치보다 위에 온다.
+function bestMatch(query, targets) {
+  let best = null;
+  const q = query.toLowerCase();
+  for (const text of targets) {
+    const score = fuzzyScore(query, text);
+    if (score < 0) continue;
+    const tier = text.toLowerCase().includes(q) ? 1 : 0;
+    if (!best || tier > best.tier || (tier === best.tier && score > best.score)) {
+      best = { tier, score };
+    }
+  }
+  return best;
+}
+
+// title에 덧붙일 소유 앱 이름. 아이콘과 같은 기준으로 경로 최상위 .app을 쓰고,
+// 실행 파일명이 이미 앱 이름을 포함하면(예: Google Chrome Helper) 중복이라 생략한다.
+function appLabel(processPath, processName) {
+  const m = processPath.match(/([^/]+)\.app(?=\/)/);
+  if (!m) return null;
+  return processName.toLowerCase().includes(m[1].toLowerCase()) ? null : m[1];
+}
+
 function buildIcon(processPath) {
   const appMatch = processPath.match(/.*?\.app\//);
   if (appMatch) return { type: 'fileicon', path: appMatch[0] };
@@ -135,8 +170,8 @@ for (const line of psOutput.split('\n')) {
   const [, pid, cpu, processPath] = match;
   const processName = processPath.split('/').pop() || processPath;
 
-  const nameScore = fuzzyScore(theQuery, processName);
-  if (nameScore < 0) continue;
+  const nameMatch = bestMatch(theQuery, searchTargets(processPath));
+  if (!nameMatch) continue;
 
   let matchedArgs = [];
   let argsScore = 0;
@@ -155,18 +190,27 @@ for (const line of psOutput.split('\n')) {
     }
   }
 
+  const label = appLabel(processPath, processName);
+
   items.push({
-    _score: nameScore + argsScore,
+    _tier: nameMatch.tier,
+    _score: nameMatch.score + argsScore,
     uid: `${processName}-${pid}`,
-    title: processName + (matchedArgs.length ? ' ' + matchedArgs.join(' ') : ''),
+    title:
+      processName +
+      (matchedArgs.length ? ' ' + matchedArgs.join(' ') : '') +
+      (label ? ` — ${label}` : ''),
     subtitle: `${cpu}% CPU @ ${processPath}`,
     arg: pid,
     icon: buildIcon(processPath),
   });
 }
 
-items.sort((a, b) => b._score - a._score);
-items.forEach(item => delete item._score);
+items.sort((a, b) => b._tier - a._tier || b._score - a._score);
+items.forEach(item => {
+  delete item._tier;
+  delete item._score;
+});
 
 if (items.length === 0) {
   items.push({ title: `No processes found for '${theQuery}'`, valid: false });
